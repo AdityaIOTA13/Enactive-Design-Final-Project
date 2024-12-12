@@ -1,6 +1,11 @@
 const { app, BrowserWindow, ipcMain } = require('electron')
 const path = require('path')
 const fs = require('fs')
+try {
+    require('electron-reloader')(module, {
+        ignore: ["output.png", "output.scad"]
+    })
+} catch (_) {}
 
 const createWindow = () => {
     const win = new BrowserWindow({
