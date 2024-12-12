@@ -2,6 +2,11 @@ import base64
 
 import requests
 import json
+import tkinter as tk
+from PIL import Image, ImageTk
+
+from openscad_runner import OpenScadRunner, RenderMode
+
 
 OPENSCAD_DOCS = ''' 
 === cube ===
@@ -595,9 +600,52 @@ def generate_openscad(huit_api_key, processed_image_path):
         print(f"Error: {response.status_code} - {response.text}")
         return None
 
+def create_image_from_openscad_code(openscad_script):
+    with open("example.scad", "w") as file:
+        file.write(openscad_script)
+
+    osr = OpenScadRunner("example.scad", "example.png", render_mode=RenderMode.render, imgsize=(800, 600), antialias=2.0)
+    osr.run()
+
+class ImageAnnotator:
+    def __init__(self, root, image_path):
+        self.root = root
+        self.root.title("Image Annotator")
+
+        # Load the image
+        self.image = Image.open(image_path)
+        self.tk_image = ImageTk.PhotoImage(self.image)
+        print(self.image.height)
+
+        # Create a canvas and display the image
+        self.canvas = tk.Canvas(root, width=self.image.width, height=self.image.height, bg="yellow", borderwidth=100)
+        self.canvas.pack(expand=True, fill="both")
+        self.canvas.create_oval(10, 10, 100, 100, fill="red", outline="red")
+
+        # self.canvas.lift()
+
+        # self.image_obj = self.canvas.create_image(0, 0, anchor=tk.NW, image=self.tk_image)
+
+        # Bind the draw method to mouse motion
+        # self.canvas.bind("<B1-Motion>", self.draw)
+
+        # Add a button to the window
+        self.button = tk.Button(root, text="Click Me", command=self.button_click)
+        self.button.pack()
+
+    def draw(self, event):
+        x, y = event.x, event.y
+        self.canvas.create_oval(x-2, y-2, x+2, y+2, fill="red", outline="red")
+
+    def button_click(self):
+        print("Button clicked!")
+
 if __name__ == "__main__":
     huit_api_key = "gb8bqMD0wrPkM040h1dvOz6LTEIZCa5y"  # Replace with your HUIT API key
     processed_image_path = "input/isometric_drawing.png"
-    generate_openscad(huit_api_key, processed_image_path)
-
+    # generate_openscad(huit_api_key, processed_image_path)
+    create_image_from_openscad_code("")
+    root = tk.Tk()
+    app = ImageAnnotator(root, "example.png")
+    root.mainloop()
 
